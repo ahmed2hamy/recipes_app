@@ -17,8 +17,11 @@ class RecipeRemoteDataSourceImpl implements RecipeRemoteDataSource {
   Future<List<Recipe>> getAllRecipes() async {
     try {
       var response = await networkClient.get(kRecipesEndPoint);
-      List<Recipe> recipes =
-          (response as List).map((e) => RecipeModel.fromJson(e)).toList();
+
+      List<Recipe> recipes = [];
+      for (var e in (response.data as List)) {
+        recipes.add(RecipeModel.fromJson(e));
+      }
       return recipes;
     } catch (e) {
       throw ServerException('Error fetching recipes: $e');

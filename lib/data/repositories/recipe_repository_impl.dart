@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
 import 'package:recipes_app/core/models/failures.dart';
 import 'package:recipes_app/core/network/network_info.dart';
@@ -20,24 +22,47 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Either<Failure, List<Recipe>>> getAllRecipes() async {
     if (await networkInfo.isConnected) {
-      try {
-        final List<Recipe> remoteRecipes =
-            await remoteDataSource.getAllRecipes();
-        for (Recipe recipe in remoteRecipes) {
-          await localDataSource.insertRecipe(recipe);
-        }
-
-        return Right(remoteRecipes);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
+      return _fetchAndUpdateRecipes();
     } else {
-      try {
-        final localRecipes = await localDataSource.getAllRecipes();
-        return Right(localRecipes);
-      } catch (e) {
-        return Left(ServerFailure(message: e.toString()));
-      }
+      return _fetchFromLocal();
+    }
+  }
+
+  Future<Either<Failure, List<Recipe>>> _fetchAndUpdateRecipes() async {
+    try {
+      final remoteRecipes = await remoteDataSource.getAllRecipes();
+      final cachedRecipes = await localDataSource.getFavorites();
+      List<Recipe> newRecipes = await _updateLocalDataSource(remoteRecipes, cachedRecipes);
+      return Right(newRecipes);
+    } catch (e) {
+      log('RecipeRepository::fetchAndUpdateRecipes - $e');
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  Future<List<Recipe>> _updateLocalDataSource(
+      List<Recipe> remoteRecipes, List<Recipe> cachedRecipes) async {
+    List<Recipe> newRecipes = [];
+
+    final cachedIds = cachedRecipes.map((r) => r.id).toSet();
+    for (var recipe in remoteRecipes) {
+      recipe = recipe.copyWith(
+          isFavorite: cachedIds.contains(recipe.id) &&
+              cachedRecipes.firstWhere((r) => r.id == recipe.id).isFavorite);
+      await localDataSource.insertRecipe(recipe);
+      newRecipes.add(recipe);
+    }
+
+    return newRecipes;
+  }
+
+  Future<Either<Failure, List<Recipe>>> _fetchFromLocal() async {
+    try {
+      final localRecipes = await localDataSource.getAllRecipes();
+      return Right(localRecipes);
+    } catch (e) {
+      log('RecipeRepository::fetchFromLocal - $e');
+      return Left(CacheFailure(message: e.toString()));
     }
   }
 }

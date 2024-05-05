@@ -12,21 +12,15 @@ class UpdateFavoriteStatus extends UseCase<void, FavoriteParams> {
 
   @override
   Future<Either<Failure, void>> call(FavoriteParams params) async {
-    return params.isFavorite
-        ? repository.addFavorite(params.recipe)
-        : repository.removeFavorite(params.recipe.id);
+    return repository.toggleFavorite(params.recipe);
   }
 }
 
 class FavoriteParams extends Equatable {
   final Recipe recipe;
-  final bool isFavorite;
 
-  const FavoriteParams({
-    required this.recipe,
-    required this.isFavorite,
-  });
+  const FavoriteParams({required this.recipe});
 
   @override
-  List<Object> get props => [recipe, isFavorite];
+  List<Object> get props => [recipe];
 }

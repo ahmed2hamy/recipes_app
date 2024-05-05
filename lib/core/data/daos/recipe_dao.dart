@@ -9,7 +9,7 @@ abstract class RecipeDao {
   @Query('SELECT * FROM recipes WHERE id = :id')
   Future<Recipe?> getRecipeById(String id);
 
-  @insert
+  @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertRecipe(Recipe recipe);
 
   @update

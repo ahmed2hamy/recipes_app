@@ -4,25 +4,27 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class NetworkClient {
   late final Dio _dio;
 
-  NetworkClient({required String baseUrl}) {
-    _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      connectTimeout: const Duration(milliseconds: 5000), // 5 seconds
-      receiveTimeout: const Duration(milliseconds: 3000), // 30 seconds
-    ));
+  NetworkClient(Dio dio) {
+    _dio = dio
+      ..options = BaseOptions(
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        connectTimeout: const Duration(milliseconds: 5000), // 5 seconds
+        receiveTimeout: const Duration(milliseconds: 3000), // 30 seconds
+      );
 
-    _dio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      responseHeader: false,
-      error: true,
-      compact: true,
-      maxWidth: 90,
-    ));
+    _dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90,
+      ),
+    );
   }
 
   Future<Response> get(String path,

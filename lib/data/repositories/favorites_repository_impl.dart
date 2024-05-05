@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
 import 'package:recipes_app/core/models/failures.dart';
 import 'package:recipes_app/data/data_sources/local/recipe_local_data_source.dart';
@@ -10,21 +12,12 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
   FavoritesRepositoryImpl(this.localDataSource);
 
   @override
-  Future<Either<Failure, void>> addFavorite(Recipe recipe) async {
+  Future<Either<Failure, void>> toggleFavorite(Recipe recipe) async {
     try {
-      await localDataSource.insertRecipe(recipe);
+      await localDataSource.updateRecipe(recipe);
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> removeFavorite(String recipeId) async {
-    try {
-      await localDataSource.deleteRecipe(recipeId);
-      return const Right(null);
-    } catch (e) {
+      log('FavoritesRepository::$e');
       return Left(CacheFailure(message: e.toString()));
     }
   }
@@ -35,6 +28,7 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
       final recipes = await localDataSource.getFavorites();
       return Right(recipes);
     } catch (e) {
+      log('FavoritesRepository::$e');
       return Left(CacheFailure(message: e.toString()));
     }
   }

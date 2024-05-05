@@ -5,7 +5,7 @@ import 'package:recipes_app/domain/entities/user.dart';
 
 abstract class UserRemoteDataSource {
   Future<User?> authenticate({
-    required String username,
+    required String email,
     required String password,
   });
 }
@@ -17,14 +17,15 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
 
   @override
   Future<User?> authenticate({
-    required String username,
+    required String email,
     required String password,
   }) async {
     ///Fake authenticate for testing
+    await Future.delayed(const Duration(seconds: 3));
     return User(
         id: math.Random().nextInt(99999999).toString(),
-        name: username,
-        email: '$username@email.com');
+        name: email.split('@').first,
+        email: email);
 
     // try {
     //   final response = await networkClient.post('/authenticate', data: {

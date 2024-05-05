@@ -3,6 +3,7 @@ import 'package:recipes_app/domain/entities/recipe.dart';
 class RecipeModel extends Recipe {
   const RecipeModel({
     required super.id,
+    required super.isFavorite,
     required super.fats,
     required super.name,
     required super.time,
@@ -27,6 +28,7 @@ class RecipeModel extends Recipe {
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
     return RecipeModel(
       id: json['id'],
+      isFavorite: false,
       fats: json['fats'],
       name: json['name'],
       time: json['time'],
@@ -45,14 +47,16 @@ class RecipeModel extends Recipe {
       description: json['description'],
       highlighted: json['highlighted'],
       ingredients: List<String>.from(json['ingredients']),
-      deliverableIngredients:
-          List<String>.from(json['deliverable_ingredients']),
+      deliverableIngredients: List<String>.from(
+        json['deliverable_ingredients'],
+      ),
     );
   }
 
   factory RecipeModel.fromEntity(Recipe recipe) {
     return RecipeModel(
       id: recipe.id,
+      isFavorite: recipe.isFavorite,
       fats: recipe.fats,
       name: recipe.name,
       time: recipe.time,
